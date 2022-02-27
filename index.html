@@ -267,7 +267,7 @@
                     })
                     .then(response => response.text())
                     .then(text => {
-                        if (JSON.parse(text) == 'Updated') {
+                        if ((text) == 'Updated') {
                             document.getElementById('catform').innerHTML = `<input class="form-control" placeholder="Category Name" onchange="addcategory()" id="categoryname">`;
                             allCat();
                         }
@@ -333,7 +333,7 @@
                             })
                             .then(response => response.text())
                             .then(text => {
-                                if (JSON.parse(text) == 'Updated') {
+                                if ((text) == 'Updated') {
                                     document.getElementById('proname').innerHTML = `<input class="form-control" placeholder="Product Name" onchange="addproduct()" id="productname">`;
                                     allpro();
                                     document.getElementById('pronamedrop').innerHTML = `<select id="categorydropdown" class="form-control" onchange="addproduct()"></select>`;
@@ -379,7 +379,7 @@
                 })
                 .then(response => response.text())
                 .then(text => {
-                    if (JSON.parse(text) == 'Deleted') {
+                    if ((text) == 'Deleted') {
                         allCat();
                     }
                 })
@@ -402,7 +402,7 @@
                 })
                 .then(response => response.text())
                 .then(text => {
-                    if (JSON.parse(text) == 'Deleted') {
+                    if ((text) == 'Deleted') {
                         allpro();
                     }
                 })
