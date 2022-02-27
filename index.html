@@ -122,11 +122,11 @@
                 if (xhr.readyState === 4) {
                     prolist = JSON.parse(xhr.responseText)
                     proshow()
-                        // if (prolist.length > 10) {
-                        //     proPageShow();
-                        // } else {
-                        //     proshow();
-                        // }
+                    if (prolist.length > 10) {
+                        proPageShow();
+                    } else {
+                        proshow();
+                    }
                 }
             };
 
