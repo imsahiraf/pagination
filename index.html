@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="https://secure.gravatar.com/avatar/30a45af91ca41753d2fb4689efe17775?s=160&d=identicon&r=g">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <!-- <script src="main.js"></script> -->
+    <title>Pagination By MrZulf</title>
+</head>
+
+<body>
+    <div class="container">
+        <h1>
+            <div class="text-center" id="welcome"></div>
+        </h1>
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="title">
+                    <h5>Category Master</h5>
+                </div>
+                <div class="row">
+                    <div id="catform" class="col-lg-12">
+                        <input class="form-control" placeholder="Category Name" onchange="addcategory()" id="categoryname">
+                    </div>
+                    <span id="catspan" style="color:red"></span>
+                </div>
+                <br>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <td>Id</td>
+                            <td>Name</td>
+                            <td>Action</td>
+                        </tr>
+                    </thead>
+                    <tbody id="cattable">
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-lg-1"></div>
+            <div class="col-lg-7">
+                <div class="title">
+                    <h5>Product Master</h5>
+                </div>
+                <div class="row">
+                    <div id="proname" class="col-lg-12">
+                        <input class="form-control" placeholder="Product Name" onchange="addproduct()" id="productname">
+                    </div>
+                    <span id="pronamespan" style="color:red"></span>
+                    <br>
+                    <div id="pronamedrop" class="col-lg-12">
+                        <select id="categorydropdown" class="form-control" onchange="addproduct()"></select>
+                        <!-- <input class="form-control" placeholder="Category Name" onchange="addcategory()" id="productcategory"> -->
+                    </div>
+                    <span id="procatspan" style="color:red"></span>
+                </div>
+                <br>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <td>Id</td>
+                            <td>Name</td>
+                            <td>Catid</td>
+                            <td>Catname</td>
+                            <td>Action</td>
+                        </tr>
+                    </thead>
+                    <tbody id="protable">
+
+                    </tbody>
+                </table>
+                <ul class="pagination mt-30" id="pagination"></ul>
+            </div>
+        </div>
+    </div>
+    <style>
+        .title {
+            padding: 10px 0;
+        }
+    </style>
+    <script>
+        // import axios from axios;
+
+        welcome();
+        allCat();
+        allpro();
+        // prodropdown();
+        var catlist = '';
+        var prolist = '';
+        var propagelist = '';
+        page = '';
+
+        function allCat() {
+            var url = "categories";
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", url);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    catlist = JSON.parse(xhr.responseText)
+                    catShow();
+                    prodropdown();
+                }
+            };
+
+            xhr.send();
+        }
+
+        function allpro() {
+            var url = "products";
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", url);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    prolist = JSON.parse(xhr.responseText)
+                    console.log(`Here page is ${page}`)
+                    if (prolist.length > 10) {
+                        proPageShow();
+                    } else {
+                        proshow();
+                    }
+                }
+            };
+
+            xhr.send();
+        }
+
+        function proPageShow() {
+            var len = prolist.length
+            var pagelist = '';
+            if (page == 0) {
+                page = 1;
+            } else {
+                page = page
+            }
+            len = Math.ceil(len / 10)
+            for (let i = 1; i <= len; i++) {
+                if (page == i) {
+                    pagelist += `<li class="page-item active"><a class="page-link" onclick="onPage('${i}')">${i}</a></li>`
+                } else {
+                    pagelist += `<li class="page-item"><a class="page-link" onclick="onPage('${i}')">${i}</a></li>`
+                }
+            }
+            document.getElementById('pagination').innerHTML = pagelist
+            perPage(page)
+        }
+
+        function perPage(page) {
+            var url = `pagination?page=${page}`;
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", url);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    propagelist = JSON.parse(xhr.responseText)
+                    perPageShow()
+                }
+            };
+
+            xhr.send();
+        }
+
+        async function perPageShow() {
+            var protext = '';
+            await propagelist.forEach(element => {
+                proid = element.proid
+                proname = element.name
+                catid = element.catid
+                catname = element.catname
+                protext += `<tr><td>${proid}</td><td>${proname}</td><td>${catid}</td><td>${catname}</td><td><button onclick="editProNow('${proid}','${proname}','${catid}')" class="btn btn-info"><i class="fa fa-pencil"></i></button>&nbsp<button onclick="deletePro('${proid}')" class="btn btn-danger"><i class="fa fa-trash"></i></button></td></tr>`
+            });
+            document.getElementById('protable').innerHTML = protext
+        }
+
+        function onPage(page) {
+            page = page
+            console.log(page)
+            allpro()
+        }
+
+        function catShow() {
+            // console.log(catlist)
+            cattext = '';
+            catlist.forEach(element => {
+                mainid = element.catid
+                mainname = element.name
+                cattext += `<tr><td>${mainid}</td><td>${mainname}</td><td><button onclick="editCatNow('${mainid}','${mainname}')" class="btn btn-info"><i class="fa fa-pencil"></i></button>&nbsp<button onclick="deleteCat('${mainid}')" class="btn btn-danger"><i class="fa fa-trash"></i></button></td></tr>`
+            });
+            document.getElementById('cattable').innerHTML = cattext
+        }
+
+        function prodropdown() {
+            droptext = '<option>Select Category</option>';
+            catlist.forEach(element => {
+                mainid = element.catid
+                mainname = element.name
+                droptext += `<option value="${mainid}">${mainname}</option>`;
+            });
+            document.getElementById('categorydropdown').innerHTML = droptext
+        }
+
+        function proshow() {
+            protext = '';
+            prolist.forEach(element => {
+                proid = element.proid
+                proname = element.name
+                catid = element.catid
+                catname = element.catname
+                protext += `<tr><td>${proid}</td><td>${proname}</td><td>${catid}</td><td>${catname}</td><td><button onclick="editProNow('${proid}','${proname}','${catid}')" class="btn btn-info"><i class="fa fa-pencil"></i></button>&nbsp<button onclick="deletePro('${proid}')" class="btn btn-danger"><i class="fa fa-trash"></i></button></td></tr>`
+            });
+            document.getElementById('protable').innerHTML = protext
+        }
+
+        function editCatNow(id, name) {
+            document.getElementById('catform').innerHTML = `<input class="form-control" placeholder="Category Name" value="${name}" onchange="editcategory('${id}')" id="categoryname">`
+        }
+
+        async function editProNow(id, name, catid) {
+            droptext = `<select id="categorydropdown" class="form-control" onchange="editproduct('${id}','${catid}')">`;
+            document.getElementById('proname').innerHTML = `<input class="form-control" placeholder="Product Name" value="${name}" onchange="editproduct('${id}','${catid}')" id="productname">`
+            await catlist.forEach(element => {
+                if (element.catid == catid) {
+                    droptext += `<option value="${element.catid}" selected>${element.name}</option>`;
+                } else {
+                    droptext += `<option value="${element.catid}">${element.name}</option>`
+                }
+            });
+            droptext += `</select>`
+            document.getElementById('pronamedrop').innerHTML = droptext
+        }
+
+        async function editcategory(id) {
+            var catname = document.getElementById('categoryname').value
+            isthere = 0;
+            await catlist.forEach(element => {
+                if ((element.name).toLowerCase() == catname.toLowerCase()) {
+                    isthere = 1;
+                }
+            });
+            if (isthere == 1) {
+                document.getElementById('catspan').style.display = 'block';
+                document.getElementById('catspan').innerHTML = 'This Category Already Exist';
+            } else {
+                document.getElementById('catspan').innerHTML = '';
+                let headersList = {
+                    "Accept": "*/*",
+                    "User-Agent": "Zulf Code",
+                    "Content-Type": "application/json"
+                }
+
+                let bodyContent = JSON.stringify({
+                    "name": `${catname}`,
+                    "catid": `${id}`
+                });
+
+                fetch("category", {
+                        method: "PUT",
+                        body: bodyContent,
+                        headers: headersList
+                    })
+                    .then(response => response.text())
+                    .then(text => {
+                        if (JSON.parse(text) == 'Updated') {
+                            document.getElementById('catform').innerHTML = `<input class="form-control" placeholder="Category Name" onchange="addcategory()" id="categoryname">`;
+                            allCat();
+                        }
+                    })
+            }
+        }
+
+        async function editproduct(id, catid) {
+            var productname = document.getElementById('productname').value
+            var categorydropdown = document.getElementById('categorydropdown').value
+            namethere = 0;
+            catthere = 0;
+            change = 0;
+            await prolist.forEach(element => {
+                if ((element.name).toLowerCase() == productname.toLowerCase()) {
+                    namethere = 1
+                }
+            })
+            if (namethere == 1) {
+                document.getElementById('pronamespan').innerHTML = 'Product Already Exist';
+            } else {
+                document.getElementById('pronamespan').innerHTML = '';
+                await catlist.forEach(element => {
+                    if ((element.catid) == categorydropdown) {
+                        catthere = 1
+                    }
+                })
+                if (categorydropdown == catid) {
+                    let text = "Do you want to change a category\nEither OK or Cancel.";
+                    if (confirm(text) == true) {
+                        document.getElementById('procatspan').innerHTML = 'Select Category';
+                        change = 1;
+                    } else {
+                        change = 0;
+                    }
+                }
+                if (change == 0) {
+                    if (catthere == 1) {
+                        document.getElementById('procatspan').innerHTML = '';
+                        // addpro(productname, categorydropdown)
+                        catlist.forEach(element => {
+                            if (categorydropdown == element.catid) {
+                                catname = element.name
+                            }
+                        });
+                        let headersList = {
+                            "Accept": "*/*",
+                            "User-Agent": "Zulf Code",
+                            "Content-Type": "application/json"
+                        }
+
+                        let bodyContent = JSON.stringify({
+                            "proid": `${id}`,
+                            "name": `${productname}`,
+                            "catid": `${categorydropdown}`,
+                            "catname": `${catname}`
+                        });
+
+                        fetch("product", {
+                                method: "PUT",
+                                body: bodyContent,
+                                headers: headersList
+                            })
+                            .then(response => response.text())
+                            .then(text => {
+                                if (JSON.parse(text) == 'Updated') {
+                                    document.getElementById('proname').innerHTML = `<input class="form-control" placeholder="Product Name" onchange="addproduct()" id="productname">`;
+                                    allpro();
+                                    document.getElementById('pronamedrop').innerHTML = `<select id="categorydropdown" class="form-control" onchange="addproduct()"></select>`;
+                                    allCat();
+                                }
+                            })
+                    } else {
+                        document.getElementById('procatspan').innerHTML = 'Select Category';
+                    }
+                }
+            }
+        }
+
+        function welcome() {
+            var url = "api";
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", url);
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    wm = JSON.parse(xhr.responseText)
+                    document.getElementById('welcome').innerHTML = wm;
+                }
+            };
+
+            xhr.send();
+        }
+
+        async function deleteCat(id) {
+            let headersList = {
+                "Accept": "*/*",
+                "User-Agent": "MrZulf Code",
+                "Content-Type": "application/json"
+            }
+            let bodyContent = JSON.stringify({
+                "catid": `${id}`
+            });
+            fetch("category", {
+                    method: "DELETE",
+                    body: bodyContent,
+                    headers: headersList
+                })
+                .then(response => response.text())
+                .then(text => {
+                    if (JSON.parse(text) == 'Deleted') {
+                        allCat();
+                    }
+                })
+        }
+
+
+        async function deletePro(id) {
+            let headersList = {
+                "Accept": "*/*",
+                "User-Agent": "MrZulf Code",
+                "Content-Type": "application/json"
+            }
+            let bodyContent = JSON.stringify({
+                "proid": `${id}`
+            });
+            fetch("product", {
+                    method: "DELETE",
+                    body: bodyContent,
+                    headers: headersList
+                })
+                .then(response => response.text())
+                .then(text => {
+                    if (JSON.parse(text) == 'Deleted') {
+                        allpro();
+                    }
+                })
+        }
+
+
+        async function addcategory() {
+            var catname = document.getElementById('categoryname').value
+            isthere = 0;
+            await catlist.forEach(element => {
+                if ((element.name).toLowerCase() == catname.toLowerCase()) {
+                    isthere = 1;
+                }
+            });
+            if (isthere == 1) {
+                document.getElementById('catspan').style.display = 'block';
+                document.getElementById('catspan').innerHTML = 'This Category Already Exist';
+            } else {
+                document.getElementById('catspan').innerHTML = '';
+                addcat(catname)
+            }
+        }
+
+        async function addproduct() {
+            var productname = document.getElementById('productname').value
+            var categorydropdown = document.getElementById('categorydropdown').value
+            namethere = 0;
+            catthere = 0;
+            await prolist.forEach(element => {
+                if ((element.name).toLowerCase() == productname.toLowerCase()) {
+                    namethere = 1
+                }
+            })
+            if (namethere == 1) {
+                document.getElementById('pronamespan').innerHTML = 'Product Already Exist';
+            } else {
+                document.getElementById('pronamespan').innerHTML = '';
+                await catlist.forEach(element => {
+                    if ((element.catid) == categorydropdown) {
+                        catthere = 1
+                    }
+                })
+                if (catthere == 1) {
+                    document.getElementById('procatspan').innerHTML = '';
+                    addpro(productname, categorydropdown)
+                } else {
+                    document.getElementById('procatspan').innerHTML = 'Select Category';
+                }
+            }
+        }
+
+        async function addcat(catname) {
+            catid = `CAT${Math.floor((Math.random() * 1000000) + 1)}`
+
+
+            let headersList = {
+                "Accept": "*/*",
+                "User-Agent": "MrZulf Code",
+                "Content-Type": "application/json"
+            }
+
+            let bodyContent = JSON.stringify({
+                "catid": `${catid}`,
+                "name": `${catname}`
+            });
+
+            fetch("addcategory", {
+                    method: "POST",
+                    body: bodyContent,
+                    headers: headersList
+                })
+                .then(response => response.text())
+                .then(text => {
+                    if (JSON.parse(text).message == 'Category Successfully Added!') {
+                        document.getElementById('categoryname').value = '';
+                        document.getElementById('productname').value = '';
+                        allCat();
+                    }
+                })
+        }
+
+        async function addpro(name, catid) {
+            proid = `PRO${Math.floor((Math.random() * 1000000) + 1)}`
+            catlist.forEach(element => {
+                if (catid == element.catid) {
+                    catname = element.name
+                }
+            });
+
+            let headersList = {
+                "Accept": "*/*",
+                "User-Agent": "MrZulf Code",
+                "Content-Type": "application/json"
+            }
+
+            let bodyContent = JSON.stringify({
+                "catid": `${catid}`,
+                "catname": `${catname}`,
+                "proid": `${proid}`,
+                "name": `${name}`
+            });
+
+            fetch("addproduct", {
+                    method: "POST",
+                    body: bodyContent,
+                    headers: headersList
+                })
+                .then(response => response.text())
+                .then(text => {
+                    if (JSON.parse(text).message == 'Product Successfully Added!') {
+                        document.getElementById('productname').value = '';
+                        document.getElementById('categoryname').value = '';
+                        allpro();
+                        allCat();
+                    }
+                })
+        }
+    </script>
+</body>
+
+</html>

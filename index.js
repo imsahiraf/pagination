@@ -9,8 +9,8 @@ const PORT = process.env.PORT || 3001;
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
 
 mongoose.connect(
     process.env.DB_CONNECTION, {
@@ -37,14 +37,17 @@ const productSchema = new mongoose.Schema({
 const Product = new mongoose.model("Product", productSchema);
 
 
-app.post("/addcategory", (req, res) => {
-    const { proid, name, catid, catname } = req.body;
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'))
+});
+
+app.post("/addcategory", async(req, res) => {
+    const { name, catid } = await req.body;
+    console.log(req.body.name)
     try {
         const category = new Category({
-            proid,
             name,
             catid,
-            catname,
         });
         category.save((err) => {
             if (err) {
@@ -83,9 +86,9 @@ app.post("/addproduct", (req, res) => {
 app.get("/products", (req, res) => {
     Product.find(function(err, products) {
         if (err) {
-            res.json(err);
+            res.send(err);
         } else {
-            res.json(products);
+            res.send(products);
         }
     });
 });
@@ -93,21 +96,30 @@ app.get("/products", (req, res) => {
 app.get("/categories", (req, res) => {
     Category.find(function(err, categories) {
         if (err) {
-            res.json(err);
+            res.send(err);
         } else {
-            res.json(categories);
+            res.send(categories);
         }
     });
 });
+
+
+app.get("/pagination", async(req, res) => {
+    var page = req.query.page
+    var page = parseInt(page) - 1
+    var start = page * 10;
+    const limit = await Product.find().sort({ _id: 1 }).skip(start).limit(10)
+    res.send(limit)
+})
 
 app.get("/product", (req, res) => {
     //Here we coud have use app.get("/product/id")
     //findbyid()
     Product.findOne({ proid: req.query.proid }, (err, product) => {
         if (err) {
-            res.json(err);
+            res.send(err);
         } else {
-            res.json(product);
+            res.send(product);
         }
     });
 });
@@ -115,9 +127,9 @@ app.get("/product", (req, res) => {
 app.get("/category", (req, res) => {
     Category.findOne({ catid: req.query.catid }, (err, category) => {
         if (err) {
-            res.json(err);
+            res.send(err);
         } else {
-            res.json(category);
+            res.send(category);
         }
     });
 });
@@ -135,18 +147,18 @@ app.put("/product", async(req, res) => {
     // })
     const update = await Product.updateOne({ proid: req.body.proid }, { $set: (req.body) })
     if (update.modifiedCount = 1) {
-        res.json('Updated')
+        res.send('Updated')
     } else {
-        res.json('Something')
+        res.send('Something')
     }
 });
 
 app.put("/category", async(req, res) => {
     const update = await Category.updateOne({ catid: req.body.catid }, { $set: (req.body) })
     if (update.modifiedCount = 1) {
-        res.json('Updated')
+        res.send('Updated')
     } else {
-        res.json('Something')
+        res.send('Something')
     }
 });
 
@@ -154,9 +166,9 @@ app.delete("/product", async(req, res) => {
     //Here also we could have use product/:id and use findbyIdandRemove
     const remove = await Product.deleteOne({ proid: req.body.proid });
     if (remove.deletedCount == 1) {
-        res.json('Deleted')
+        res.send('Deleted')
     } else {
-        res.json('Something')
+        res.send('Something')
     }
     // console.log(remove)
     // Product.findByIdAndRemove(req.params.id, (err, product) => {
@@ -169,16 +181,17 @@ app.delete("/product", async(req, res) => {
 });
 
 app.delete("/category", async(req, res) => {
+    console.log(req.body.catid)
     const remove = await Category.deleteOne({ catid: req.body.catid });
     if (remove.deletedCount == 1) {
-        res.json('Deleted')
+        res.send('Deleted')
     } else {
-        res.json('Something')
+        res.send('Something')
     }
 });
 
 app.get("/api", (req, res) => {
-    res.json({ message: "Hello from MrZulf!" });
+    res.json('Hello from MrZulf!');
 });
 
 app.listen(PORT, () => {
