@@ -86,8 +86,6 @@
         }
     </style>
     <script>
-        // import axios from axios;
-
         welcome();
         allCat();
         allpro();
@@ -95,7 +93,7 @@
         var catlist = '';
         var prolist = '';
         var propagelist = '';
-        page = '';
+        page = 0;
 
         function allCat() {
             var url = "categories";
@@ -123,12 +121,12 @@
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
                     prolist = JSON.parse(xhr.responseText)
-                    console.log(`Here page is ${page}`)
-                    if (prolist.length > 10) {
-                        proPageShow();
-                    } else {
-                        proshow();
-                    }
+                    proshow()
+                        // if (prolist.length > 10) {
+                        //     proPageShow();
+                        // } else {
+                        //     proshow();
+                        // }
                 }
             };
 
@@ -182,9 +180,8 @@
             document.getElementById('protable').innerHTML = protext
         }
 
-        function onPage(page) {
-            page = page
-            console.log(page)
+        function onPage(no) {
+            page = no
             allpro()
         }
 
