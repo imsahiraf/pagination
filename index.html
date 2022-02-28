@@ -162,7 +162,12 @@
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
                     propagelist = JSON.parse(xhr.responseText)
-                    perPageShow()
+                    if (propagelist.length == 0) {
+                        myPage = page - 1;
+                        onPage(myPage)
+                    } else {
+                        perPageShow()
+                    }
                 }
             };
 
@@ -287,65 +292,70 @@
                     namethere = 1
                 }
             })
-            if (namethere == 1) {
-                document.getElementById('pronamespan').innerHTML = 'Product Already Exist';
+            if (productname.length == 0) {
+                document.getElementById('pronamespan').innerHTML = 'Please enter the product name.';
             } else {
-                document.getElementById('pronamespan').innerHTML = '';
-                await catlist.forEach(element => {
-                    if ((element.catid) == categorydropdown) {
-                        catthere = 1
-                    }
-                })
-                if (categorydropdown == catid) {
-                    let text = "Do you want to change a category\nEither OK or Cancel.";
-                    if (confirm(text) == true) {
-                        document.getElementById('procatspan').innerHTML = 'Select Category';
-                        change = 1;
-                    } else {
-                        change = 0;
-                    }
-                }
-                if (change == 0) {
-                    if (catthere == 1) {
-                        document.getElementById('procatspan').innerHTML = '';
-                        // addpro(productname, categorydropdown)
-                        catlist.forEach(element => {
-                            if (categorydropdown == element.catid) {
-                                catname = element.name
-                            }
-                        });
-                        let headersList = {
-                            "Accept": "*/*",
-                            "User-Agent": "Zulf Code",
-                            "Content-Type": "application/json"
+                if (namethere == 1) {
+                    document.getElementById('pronamespan').innerHTML = 'Product Already Exist';
+                } else {
+                    document.getElementById('pronamespan').innerHTML = '';
+                    await catlist.forEach(element => {
+                        if ((element.catid) == categorydropdown) {
+                            catthere = 1
                         }
-
-                        let bodyContent = JSON.stringify({
-                            "proid": `${id}`,
-                            "name": `${productname}`,
-                            "catid": `${categorydropdown}`,
-                            "catname": `${catname}`
-                        });
-
-                        fetch("product", {
-                                method: "PUT",
-                                body: bodyContent,
-                                headers: headersList
-                            })
-                            .then(response => response.text())
-                            .then(text => {
-                                if ((text) == 'Updated') {
-                                    document.getElementById('proname').innerHTML = `<input class="form-control" placeholder="Product Name" onchange="addproduct()" id="productname">`;
-                                    allpro();
-                                    document.getElementById('pronamedrop').innerHTML = `<select id="categorydropdown" class="form-control" onchange="addproduct()"></select>`;
-                                    allCat();
+                    })
+                    if (categorydropdown == catid) {
+                        let text = "Do you want to change a category\nEither OK or Cancel.";
+                        if (confirm(text) == true) {
+                            document.getElementById('procatspan').innerHTML = 'Select Category';
+                            change = 1;
+                        } else {
+                            change = 0;
+                        }
+                    }
+                    if (change == 0) {
+                        if (catthere == 1) {
+                            document.getElementById('procatspan').innerHTML = '';
+                            // addpro(productname, categorydropdown)
+                            catlist.forEach(element => {
+                                if (categorydropdown == element.catid) {
+                                    catname = element.name
                                 }
-                            })
-                    } else {
-                        document.getElementById('procatspan').innerHTML = 'Select Category';
+                            });
+                            let headersList = {
+                                "Accept": "*/*",
+                                "User-Agent": "Zulf Code",
+                                "Content-Type": "application/json"
+                            }
+
+                            let bodyContent = JSON.stringify({
+                                "proid": `${id}`,
+                                "name": `${productname}`,
+                                "catid": `${categorydropdown}`,
+                                "catname": `${catname}`
+                            });
+
+                            fetch("product", {
+                                    method: "PUT",
+                                    body: bodyContent,
+                                    headers: headersList
+                                })
+                                .then(response => response.text())
+                                .then(text => {
+                                    if ((text) == 'Updated') {
+                                        document.getElementById('proname').innerHTML = `<input class="form-control" placeholder="Product Name" onchange="addproduct()" id="productname">`;
+                                        allpro();
+                                        document.getElementById('pronamedrop').innerHTML = `<select id="categorydropdown" class="form-control" onchange="addproduct()"></select>`;
+                                        allCat();
+                                    }
+                                })
+                        } else {
+                            document.getElementById('procatspan').innerHTML = 'Select Category';
+                        }
                     }
                 }
             }
+
         }
 
         function welcome() {
@@ -437,20 +447,24 @@
                     namethere = 1
                 }
             })
-            if (namethere == 1) {
-                document.getElementById('pronamespan').innerHTML = 'Product Already Exist';
+            if (productname.length == 0) {
+                document.getElementById('pronamespan').innerHTML = 'Please enter the product name.';
             } else {
-                document.getElementById('pronamespan').innerHTML = '';
-                await catlist.forEach(element => {
-                    if ((element.catid) == categorydropdown) {
-                        catthere = 1
-                    }
-                })
-                if (catthere == 1) {
-                    document.getElementById('procatspan').innerHTML = '';
-                    addpro(productname, categorydropdown)
+                if (namethere == 1) {
+                    document.getElementById('pronamespan').innerHTML = 'Product Already Exist';
                 } else {
-                    document.getElementById('procatspan').innerHTML = 'Select Category';
+                    document.getElementById('pronamespan').innerHTML = '';
+                    await catlist.forEach(element => {
+                        if ((element.catid) == categorydropdown) {
+                            catthere = 1
+                        }
+                    })
+                    if (catthere == 1) {
+                        document.getElementById('procatspan').innerHTML = '';
+                        addpro(productname, categorydropdown)
+                    } else {
+                        document.getElementById('procatspan').innerHTML = 'Select Category';
+                    }
                 }
             }
         }
