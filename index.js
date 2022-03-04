@@ -3,7 +3,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const mongodb = require("mongodb");
 const cors = require("cors");
-const bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
+const req = require("express/lib/request");
 const dotenv = require("dotenv").config();
 const PORT = process.env.PORT || 3001;
 
@@ -39,6 +40,10 @@ const Product = new mongoose.model("Product", productSchema);
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'))
+});
+
+app.get("/next", (req, res) => {
+    res.sendFile(path.join(__dirname, 'next.html'))
 });
 
 app.post("/addcategory", async(req, res) => {
@@ -110,6 +115,22 @@ app.get("/pagination", async(req, res) => {
     var start = page * 10;
     const limit = await Product.find().sort({ _id: 1 }).skip(start).limit(10)
     res.send(limit)
+})
+
+
+
+app.get("/joinproduct", async(req, res) => {
+    const join = await Product.aggregate([{ $lookup: { from: "categories", localField: "catid", foreignField: "catid", as: "category" } }])
+    res.send(join)
+})
+
+app.get("/joinpagination", async(req, res) => {
+    var pageno = req.query.pageno
+    var pageno = parseInt(pageno) - 1
+    var startfrom = pageno * 10;
+    console.log(startfrom)
+    const joinlimit = await Product.aggregate([{ $lookup: { from: "categories", localField: "catid", foreignField: "catid", as: "category" } }, { $sort: { "_id": 1 } }, { $skip: startfrom }, { $limit: 10 }])
+    res.send(joinlimit)
 })
 
 app.get("/product", (req, res) => {
